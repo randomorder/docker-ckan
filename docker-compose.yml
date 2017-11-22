@@ -1,4 +1,4 @@
-version: '2'
+version: '2.1'
 services:
   ckan:
     container_name: ckan
@@ -16,12 +16,10 @@ services:
       interval: 1m
       timeout: 5s
       retries: 3
-    build: ./ckan
 
   solr:
     container_name: solr
     image: ckan/solr:latest
-    build: ./solr
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8983"]
       interval: 1m
