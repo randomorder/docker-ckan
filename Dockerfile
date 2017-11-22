@@ -59,7 +59,7 @@ RUN ln -s "${CKAN_HOME}/ckan/config/who.ini" "${CKAN_CONFIG}/who.ini"
 WORKDIR "${CKAN_HOME}"
 
 ADD ckan-entrypoint.sh /ckan-entrypoint.sh
-RUN chmox +x /ckan-entrypoint.sh
+RUN chmod +x /ckan-entrypoint.sh
 
 ENTRYPOINT ["/ckan-entrypoint.sh"]
 
