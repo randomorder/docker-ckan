@@ -1,12 +1,5 @@
 FROM centos:7
 
-# Set Env Vars
-ENV CKAN_HOME="/usr/lib/ckan"
-ENV CKAN_CONFIG="/etc/ckan"
-ENV CKAN_STORAGE_PATH "/var/lib/ckan"
-ENV CKAN_REPO="https://github.com/ckan/ckan.git"
-ENV CKAN_REPO_TAG="ckan-2.7.2"
-
 # Install requirements
 RUN yum -y install epel-release
 RUN yum -y install postgresql postgresql-contrib postgresql-devel postgis
@@ -18,6 +11,16 @@ RUN yum -y install gdal-python python-pip python-imaging python-virtualenv \
             python-pylons python-repoze-who python-repoze-who-plugins-sa \
             python-repoze-who-testutil python-repoze-who-friendlyform \
             python-tempita python-zope-interface policycoreutils-python
+
+# Set Env Vars
+ENV CKAN_HOME="/usr/lib/ckan"
+ENV CKAN_CONFIG="/etc/ckan"
+ENV CKAN_STORAGE_PATH "/var/lib/ckan"
+
+# Build time argument
+ARG CKAN_SITE_URL="http://localhost:5000"
+ARG CKAN_GIT_REPO="https://github.com/ckan/ckan.git"
+ARG CKAN_GIT_CHECKOUT="tags/ckan-2.7.2"
 
 # Add 'ckan' user
 RUN useradd -m -s /sbin/nologin -d "${CKAN_HOME}" -c "CKAN User" ckan
@@ -36,9 +39,9 @@ RUN pip install --upgrade pip
 WORKDIR "${CKAN_HOME}"
 
 # Get CKAN code
-RUN git clone "${CKAN_REPO}"
+RUN git clone "${CKAN_GIT_REPO}"
 WORKDIR "${CKAN_HOME}/ckan"
-RUN git checkout "tags/${CKAN_REPO_TAG}"
+RUN git checkout "${CKAN_GIT_CHECKOUT}"
 
 # Temporary fix for dependencies
 RUN pip install pytz
@@ -50,7 +53,17 @@ RUN pip install -r "${CKAN_HOME}/ckan/requirements.txt"
 # Install CKAN
 RUN pip install -e . #egg=ckan
 
+# Configure CKAN
+RUN ln -s "${CKAN_HOME}/ckan/config/who.ini" "${CKAN_CONFIG}/who.ini"
+
 WORKDIR "${CKAN_HOME}"
 
+ADD ckan-entrypoint.sh /ckan-entrypoint.sh
+RUN chmox +x /ckan-entrypoint.sh
+
+ENTRYPOINT ["/ckan-entrypoint.sh"]
+
+USER ckan
 EXPOSE 5000
+
 CMD ["paster","serve","${CKAN_CONFIG}/ckan.ini"]
