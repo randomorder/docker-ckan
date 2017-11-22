@@ -1,0 +1,47 @@
+version: '2'
+services:
+  ckan:
+    container_name: ckan
+    image: geosolutionsit/ckan:2.7.2
+    ports:
+        - "5000:5000"
+    environment:
+        - CKAN_SITE_URL=http://localhost:5000
+    depends_on:
+      - postgres
+      - solr
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+    build: ./ckan
+
+  solr:
+    container_name: solr
+    image: ckan/solr:latest
+    build: ./solr
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8983"]
+      interval: 1m
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    container_name: postgres
+    image: ckan/postgresql:latest
+    healthcheck:
+      test: ["CMD", "psql", "-h", "localhost", "-U", "postgres", "-c", "SELECT 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      
+  redis:
+    container_name: redis
+    image: redis:latest
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "localhost", "-p", "6379" , "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
