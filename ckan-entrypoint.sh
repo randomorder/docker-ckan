@@ -36,7 +36,7 @@ set_environment () {
 }
 
 write_config () {
-  ckan-paster make-config --no-interactive ckan "$CONFIG"
+  paster make-config --no-interactive ckan "$CONFIG"
 }
 
 # If we don't already have a config file, bootstrap
@@ -62,5 +62,5 @@ if [ -z "$CKAN_DATAPUSHER_URL" ]; then
 fi
 
 set_environment
-ckan-paster --plugin=ckan db init -c "${CKAN_CONFIG}/ckan.ini"
+paster --plugin=ckan db init -c "${CKAN_CONFIG}/ckan.ini"
 exec "$@"
